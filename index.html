@@ -7,308 +7,405 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header>
-      <div class="logo">VOLKSWAGEN <span>SYSTEMS</span></div>
-      <nav>
-        <button class="hamburger" onclick="toggleMobileMenu()">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-        <ul class="nav-menu">
-          <li>
-            <button id="nav-book" class="active" onclick="setView('book')">
-              Service Booking
-            </button>
-          </li>
-          <li>
-            <button id="nav-garage" onclick="setView('garage')">
-              My Portal
-            </button>
-          </li>
-        </ul>
-      </nav>
-    </header>
+    <div id="login-screen" class="login-screen">
+      <div class="login-container">
+        <div class="login-header">
+          <div class="logo">VOLKSWAGEN <span>SYSTEMS</span></div>
+          <h1>Service Portal Login</h1>
+        </div>
+        <form id="login-form" class="login-form">
+          <div class="form-group">
+            <label for="admin-username">Username</label>
+            <input
+              type="text"
+              id="admin-username"
+              placeholder="Enter username"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="admin-password">Password</label>
+            <input
+              type="password"
+              id="admin-password"
+              placeholder="Enter password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+      </div>
+    </div>
 
-    <main>
-      <section id="book-section" class="section active">
-        <h1>Technical Service Scheduler</h1>
-        <div class="card">
-          <form id="mainForm">
-            <input type="hidden" id="edit-id" />
+    <div id="main-app" class="main-app">
+      <header>
+        <div class="logo">VOLKSWAGEN <span>SYSTEMS</span></div>
+        <nav>
+          <button class="hamburger" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <ul class="nav-menu">
+            <li>
+              <button id="nav-book" class="active" onclick="setView('book')">
+                Service Booking
+              </button>
+            </li>
+            <li>
+              <button id="nav-garage" onclick="setView('garage')">
+                My Portal
+              </button>
+            </li>
+            <li>
+              <button id="nav-logout" onclick="handleLogout()" class="logout-btn">
+                Logout
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </header>
 
-            <h2>Vehicle Identification</h2>
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Vehicle Model</label>
-                <select
-                  id="model-select"
-                  onchange="checkOther(this.value)"
-                  required
-                >
-                  <option value="" disabled selected>Select Model</option>
-                  <option value="Virtus">Virtus</option>
-                  <option value="Taigun">Taigun</option>
-                  <option value="Polo">Polo</option>
-                  <option value="Vento">Vento</option>
-                  <option value="Jetta">Jetta</option>
-                  <option value="Other">Other Model</option>
-                </select>
-                <div id="other-input-container">
+      <main>
+        <section id="book-section" class="section active">
+          <h1>Technical Service Scheduler</h1>
+          <div class="card">
+            <form id="mainForm">
+              <input type="hidden" id="edit-id" />
+
+              <h2>Vehicle Identification</h2>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Vehicle Model</label>
+                  <select
+                    id="model-select"
+                    onchange="checkOther(this.value)"
+                    required
+                  >
+                    <option value="" disabled selected>Select Model</option>
+                    <option value="Virtus">Virtus</option>
+                    <option value="Taigun">Taigun</option>
+                    <option value="Polo">Polo</option>
+                    <option value="Vento">Vento</option>
+                    <option value="Jetta">Jetta</option>
+                    <option value="Other">Other Model</option>
+                  </select>
+                  <div id="other-input-container">
+                    <input
+                      type="text"
+                      id="model-other"
+                      placeholder="Specify Model (e.g. Passat, Arteon)"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>VIN / Registration Number</label>
                   <input
                     type="text"
-                    id="model-other"
-                    placeholder="Specify Model (e.g. Passat, Arteon)"
+                    id="reg-num"
+                    placeholder="Registration Number"
+                    required
                   />
                 </div>
               </div>
-              <div class="form-group">
-                <label>VIN / Registration Number</label>
-                <input
-                  type="text"
-                  id="reg-num"
-                  placeholder="Registration Number"
-                  required
-                />
-              </div>
-            </div>
 
-            <h2>Technical Scope</h2>
-            <div class="category-nav">
-              <button
-                type="button"
-                class="cat-btn"
-                id="btn-maint"
-                onclick="tabTo('maint')"
-              >
-                <h4>Periodic Maintenance</h4>
-              </button>
-              <button
-                type="button"
-                class="cat-btn"
-                id="btn-repair"
-                onclick="tabTo('repair')"
-              >
-                <h4>Mechanical & Electrical</h4>
-              </button>
-              <button
-                type="button"
-                class="cat-btn"
-                id="btn-body"
-                onclick="tabTo('body')"
-              >
-                <h4>Body & Detailing</h4>
-              </button>
-            </div>
+              <h2>Technical Scope</h2>
+              <div class="category-nav">
+                <button
+                  type="button"
+                  class="cat-btn"
+                  id="btn-maint"
+                  onclick="tabTo('maint')"
+                >
+                  <h4>Periodic Maintenance</h4>
+                </button>
+                <button
+                  type="button"
+                  class="cat-btn"
+                  id="btn-repair"
+                  onclick="tabTo('repair')"
+                >
+                  <h4>Mechanical & Electrical</h4>
+                </button>
+                <button
+                  type="button"
+                  class="cat-btn"
+                  id="btn-body"
+                  onclick="tabTo('body')"
+                >
+                  <h4>Body & Detailing</h4>
+                </button>
+              </div>
 
-            <div id="panel-maint" class="service-panel">
-              <span class="sub-group-title">Interval Services</span>
-              <div class="options-grid">
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="15k KM Service" />
-                  15,000 KM Periodic Service</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="30k KM Service" />
-                  30,000 KM Periodic Service</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="45k KM Service" />
-                  45,000 KM Periodic Service</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="60k KM Service" />
-                  60,000 KM Periodic Service</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="90k KM Service" />
-                  90,000 KM Periodic Service</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="120k KM Service" />
-                  120,000 KM Major Service</label
-                >
+              <div id="panel-maint" class="service-panel">
+                <span class="sub-group-title">Interval Services</span>
+                <div class="options-grid">
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="15k KM Service"
+                    />
+                    15,000 KM Periodic Service</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="30k KM Service"
+                    />
+                    30,000 KM Periodic Service</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="45k KM Service"
+                    />
+                    45,000 KM Periodic Service</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="60k KM Service"
+                    />
+                    60,000 KM Periodic Service</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="90k KM Service"
+                    />
+                    90,000 KM Periodic Service</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="120k KM Service"
+                    />
+                    120,000 KM Major Service</label
+                  >
+                </div>
+                <span class="sub-group-title">Fluids & Filtration</span>
+                <div class="options-grid">
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Synthetic Oil Change"
+                    />
+                    Synthetic Engine Oil Change</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Brake Fluid Flush"
+                    />
+                    Brake Fluid Flush & Replace</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Coolant Top-up"
+                    />
+                    Coolant System G12/G13 Refill</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Spark Plug Set"
+                    />
+                    Spark Plug Set Replacement</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Filters Replace"
+                    />
+                    Air/Fuel/Cabin Filter Set</label
+                  >
+                </div>
               </div>
-              <span class="sub-group-title">Fluids & Filtration</span>
-              <div class="options-grid">
-                <label class="opt-item"
-                  ><input
-                    type="checkbox"
-                    name="task"
-                    value="Synthetic Oil Change"
-                  />
-                  Synthetic Engine Oil Change</label
-                >
-                <label class="opt-item"
-                  ><input
-                    type="checkbox"
-                    name="task"
-                    value="Brake Fluid Flush"
-                  />
-                  Brake Fluid Flush & Replace</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Coolant Top-up" />
-                  Coolant System G12/G13 Refill</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Spark Plug Set" />
-                  Spark Plug Set Replacement</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Filters Replace" />
-                  Air/Fuel/Cabin Filter Set</label
-                >
-              </div>
-            </div>
 
-            <div id="panel-repair" class="service-panel">
-              <span class="sub-group-title">Transmission & Engine</span>
-              <div class="options-grid">
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="DSG Calibration" />
-                  DSG Gearbox Calibration</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Clutch Kit" />
-                  Clutch & Flywheel Assembly</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Timing Belt Kit" />
-                  Timing Belt & Tensioner Kit</label
-                >
-                <label class="opt-item"
-                  ><input
-                    type="checkbox"
-                    name="task"
-                    value="Turbo Diagnostic"
-                  />
-                  Turbocharger Inspection</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Engine Mounts" />
-                  Engine/Gearbox Mount Replacement</label
-                >
+              <div id="panel-repair" class="service-panel">
+                <span class="sub-group-title">Transmission & Engine</span>
+                <div class="options-grid">
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="DSG Calibration"
+                    />
+                    DSG Gearbox Calibration</label
+                  >
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="Clutch Kit" />
+                    Clutch & Flywheel Assembly</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Timing Belt Kit"
+                    />
+                    Timing Belt & Tensioner Kit</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Turbo Diagnostic"
+                    />
+                    Turbocharger Inspection</label
+                  >
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="Engine Mounts" />
+                    Engine/Gearbox Mount Replacement</label
+                  >
+                </div>
+                <span class="sub-group-title">Braking & Suspension</span>
+                <div class="options-grid">
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="Disc Rotors" />
+                    Brake Disc Rotors Replacement</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Shock Absorbers"
+                    />
+                    Front/Rear Shock Absorbers</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Suspension Bushes"
+                    />
+                    Suspension Bushing & Link Rods</label
+                  >
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="Steering Rack" />
+                    Steering Rack Repair/Adjustment</label
+                  >
+                </div>
+                <span class="sub-group-title">Electrical & HVAC</span>
+                <div class="options-grid">
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="OBD Scanning" />
+                    Full VAG-COM/OBD Diagnostic</label
+                  >
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="AC Overhaul" />
+                    AC Evaporator & Compressor Service</label
+                  >
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="Battery VARTA" />
+                    Battery Health Check (VARTA/Exide)</label
+                  >
+                </div>
               </div>
-              <span class="sub-group-title">Braking & Suspension</span>
-              <div class="options-grid">
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Disc Rotors" />
-                  Brake Disc Rotors Replacement</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Shock Absorbers" />
-                  Front/Rear Shock Absorbers</label
-                >
-                <label class="opt-item"
-                  ><input
-                    type="checkbox"
-                    name="task"
-                    value="Suspension Bushes"
-                  />
-                  Suspension Bushing & Link Rods</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Steering Rack" />
-                  Steering Rack Repair/Adjustment</label
-                >
-              </div>
-              <span class="sub-group-title">Electrical & HVAC</span>
-              <div class="options-grid">
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="OBD Scanning" />
-                  Full VAG-COM/OBD Diagnostic</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="AC Overhaul" /> AC
-                  Evaporator & Compressor Service</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Battery VARTA" />
-                  Battery Health Check (VARTA/Exide)</label
-                >
-              </div>
-            </div>
 
-            <div id="panel-body" class="service-panel">
-              <span class="sub-group-title">Cosmetic & Protection</span>
-              <div class="options-grid">
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Panel Painting" />
-                  Denting & Panel Painting</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Ceramic Coating" />
-                  Ceramic Pro 9H Coating</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Underbody Wax" />
-                  Anti-Corrosion Underbody Wax</label
-                >
-                <label class="opt-item"
-                  ><input
-                    type="checkbox"
-                    name="task"
-                    value="Windshield Replace"
-                  />
-                  Front Windshield Replacement</label
-                >
-                <label class="opt-item"
-                  ><input type="checkbox" name="task" value="Interior Detail" />
-                  Deep Interior Valet & Sanitization</label
-                >
+              <div id="panel-body" class="service-panel">
+                <span class="sub-group-title">Cosmetic & Protection</span>
+                <div class="options-grid">
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Panel Painting"
+                    />
+                    Denting & Panel Painting</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Ceramic Coating"
+                    />
+                    Ceramic Pro 9H Coating</label
+                  >
+                  <label class="opt-item"
+                    ><input type="checkbox" name="task" value="Underbody Wax" />
+                    Anti-Corrosion Underbody Wax</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Windshield Replace"
+                    />
+                    Front Windshield Replacement</label
+                  >
+                  <label class="opt-item"
+                    ><input
+                      type="checkbox"
+                      name="task"
+                      value="Interior Detail"
+                    />
+                    Deep Interior Valet & Sanitization</label
+                  >
+                </div>
               </div>
-            </div>
 
-            <h2>Logistics & Remarks</h2>
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Appointment Date</label>
-                <input type="date" id="date-pick" required />
+              <h2>Logistics & Remarks</h2>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Appointment Date</label>
+                  <input type="date" id="date-pick" required />
+                </div>
+                <div class="form-group">
+                  <label>Time Slot</label>
+                  <select id="time-pick" required>
+                    <option value="" disabled selected>Select Slot</option>
+                    <option value="08:30 AM">08:30 AM (Early Drop)</option>
+                    <option value="10:30 AM">10:30 AM</option>
+                    <option value="01:30 PM">01:30 PM</option>
+                    <option value="03:30 PM">03:30 PM</option>
+                  </select>
+                </div>
+                <div class="form-group full-width">
+                  <label>Technical Notes & Customer Remarks</label>
+                  <textarea
+                    id="notes"
+                    rows="5"
+                    placeholder="Please describe any specific symptoms (e.g. rattling at 2000 RPM, cold start issues)..."
+                  ></textarea>
+                </div>
               </div>
-              <div class="form-group">
-                <label>Time Slot</label>
-                <select id="time-pick" required>
-                  <option value="" disabled selected>Select Slot</option>
-                  <option value="08:30 AM">08:30 AM (Early Drop)</option>
-                  <option value="10:30 AM">10:30 AM</option>
-                  <option value="01:30 PM">01:30 PM</option>
-                  <option value="03:30 PM">03:30 PM</option>
-                </select>
-              </div>
-              <div class="form-group full-width">
-                <label>Technical Notes & Customer Remarks</label>
-                <textarea
-                  id="notes"
-                  rows="5"
-                  placeholder="Please describe any specific symptoms (e.g. rattling at 2000 RPM, cold start issues)..."
-                ></textarea>
-              </div>
-            </div>
 
-            <div class="btn-row">
-              <button type="submit" class="btn btn-primary" id="submit-btn">
-                Submit Booking
-              </button>
-              <button
-                type="button"
-                id="cancel-edit"
-                class="btn btn-outline"
-                style="display: none"
-                onclick="resetForm()"
-              >
-                Discard Modification
-              </button>
-            </div>
-          </form>
-        </div>
-      </section>
+              <div class="btn-row">
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                  Submit Booking
+                </button>
+                <button
+                  type="button"
+                  id="cancel-edit"
+                  class="btn btn-outline"
+                  style="display: none"
+                  onclick="resetForm()"
+                >
+                  Discard Modification
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
 
-      <section id="garage-section" class="section">
-        <h1>Vehicle Service Portal</h1>
-        <div id="booking-list"></div>
-      </section>
-    </main>
+        <section id="garage-section" class="section">
+          <h1>Vehicle Service Portal</h1>
+          <div id="booking-list"></div>
+        </section>
+      </main>
+    </div>
 
     <script src="script.js"></script>
   </body>

@@ -21,6 +21,41 @@ function toggleMobileMenu() {
   navMenu.classList.toggle("active");
 }
 
+function isLoggedIn() {
+  return sessionStorage.getItem("vw_admin_logged_in") === "true";
+}
+
+function showLoginScreen() {
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("main-app").style.display = "none";
+}
+
+function hideLoginScreen() {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("main-app").style.display = "block";
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById("admin-username").value;
+  const password = document.getElementById("admin-password").value;
+  if (username === "admin" && password === "admin123") {
+    sessionStorage.setItem("vw_admin_logged_in", "true");
+    hideLoginScreen();
+    setView("garage");
+  } else {
+    alert("Invalid username or password");
+    document.getElementById("admin-password").value = "";
+  }
+}
+
+function handleLogout() {
+  if (confirm("Are you sure you want to logout?")) {
+    sessionStorage.removeItem("vw_admin_logged_in");
+    showLoginScreen();
+  }
+}
+
 function setView(view) {
   document
     .querySelectorAll(".section")
@@ -30,6 +65,15 @@ function setView(view) {
     .forEach((b) => b.classList.remove("active"));
   document.getElementById(`${view}-section`).classList.add("active");
   document.getElementById(`nav-${view}`).classList.add("active");
+
+  const activeSection = document.getElementById(`${view}-section`);
+  if (activeSection) {
+    activeSection.setAttribute("aria-hidden", "false");
+    document.querySelectorAll(".section:not(.active)").forEach((section) => {
+      section.setAttribute("aria-hidden", "true");
+    });
+  }
+
   if (view === "garage") renderGarage();
 
   const hamburger = document.querySelector(".hamburger");
@@ -39,10 +83,14 @@ function setView(view) {
     navMenu.classList.remove("active");
   }
   window.scrollTo(0, 0);
+
+  const mainHeading = activeSection.querySelector("h1");
+  if (mainHeading) {
+    mainHeading.focus();
+  }
 }
 
-const form = document.getElementById("mainForm");
-form.onsubmit = (e) => {
+async function handleFormSubmit(e) {
   e.preventDefault();
   const checked = Array.from(
     document.querySelectorAll('input[name="task"]:checked')
@@ -69,6 +117,19 @@ form.onsubmit = (e) => {
     notes: document.getElementById("notes").value,
   };
 
+  try {
+    const response = await fetch("http://localhost:3000/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry),
+    });
+    if (response.ok) {
+      console.log("Saved to database");
+    }
+  } catch (error) {
+    console.log("API unavailable, using localStorage");
+  }
+
   const data = JSON.parse(localStorage.getItem("vw_enterprise_v4") || "[]");
   const idx = data.findIndex((x) => x.id === entry.id);
 
@@ -78,11 +139,15 @@ form.onsubmit = (e) => {
   localStorage.setItem("vw_enterprise_v4", JSON.stringify(data));
   resetForm();
   setView("garage");
-};
+}
+
+const form = document.getElementById("mainForm");
+form.addEventListener("submit", handleFormSubmit);
 
 function renderGarage() {
   const container = document.getElementById("booking-list");
   const data = JSON.parse(localStorage.getItem("vw_enterprise_v4") || "[]");
+
   container.innerHTML = data.length
     ? ""
     : '<div class="card">No active technical dossiers found.</div>';
@@ -92,25 +157,30 @@ function renderGarage() {
     .forEach((item) => {
       const div = document.createElement("div");
       div.className = "booking-item";
+      div.setAttribute("role", "region");
+      div.setAttribute("aria-label", `Booking for ${item.model} - ${item.reg}`);
       div.innerHTML = `
         <div class="booking-meta">
             <h3>${item.model} — ${item.reg}</h3>
             <p>Dossier Date: <strong>${
               item.date
             }</strong> | Scheduled Slot: <strong>${item.time}</strong></p>
-            <div class="task-tags">
+            <div class="task-tags" aria-label="Service tasks">
                 ${item.tasks
-                  .map((t) => `<span class="tag">${t}</span>`)
+                  .map(
+                    (t) =>
+                      `<span class="tag" aria-label="Service task: ${t}">${t}</span>`
+                  )
                   .join("")}
             </div>
         </div>
         <div style="display:flex; gap:1.5rem; align-items:center">
             <button class="btn btn-outline" style="padding:0.7rem 1.5rem;" onclick="prepEdit('${
               item.id
-            }')">Modify</button>
+            }')" aria-label="Modify booking for ${item.model}">Modify</button>
             <button class="btn btn-danger" onclick="cancelBooking('${
               item.id
-            }')">Cancel</button>
+            }')" aria-label="Cancel booking for ${item.model}">Cancel</button>
         </div>
     `;
       container.appendChild(div);
@@ -170,3 +240,16 @@ tabTo("maint");
 document.getElementById("date-pick").min = new Date()
   .toISOString()
   .split("T")[0];
+
+let loginFormHandler = handleLogin;
+
+document
+  .getElementById("login-form")
+  .addEventListener("submit", loginFormHandler);
+
+if (!isLoggedIn()) {
+  showLoginScreen();
+} else {
+  hideLoginScreen();
+  setView("garage");
+}
