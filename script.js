@@ -1,24 +1,66 @@
+const domCache = {
+  loginScreen: null,
+  mainApp: null,
+  bookingList: null,
+  editId: null,
+  modelSelect: null,
+  modelOther: null,
+  regNum: null,
+  datePick: null,
+  timePick: null,
+  notes: null,
+  submitBtn: null,
+  cancelEdit: null,
+  otherInputContainer: null,
+  adminUsername: null,
+  adminPassword: null,
+  hamburger: null,
+  navMenu: null,
+  sections: null,
+  navButtons: null,
+  catBtns: null,
+  servicePanels: null,
+
+  init() {
+    this.loginScreen = document.getElementById("login-screen");
+    this.mainApp = document.getElementById("main-app");
+    this.bookingList = document.getElementById("booking-list");
+    this.editId = document.getElementById("edit-id");
+    this.modelSelect = document.getElementById("model-select");
+    this.modelOther = document.getElementById("model-other");
+    this.regNum = document.getElementById("reg-num");
+    this.datePick = document.getElementById("date-pick");
+    this.timePick = document.getElementById("time-pick");
+    this.notes = document.getElementById("notes");
+    this.submitBtn = document.getElementById("submit-btn");
+    this.cancelEdit = document.getElementById("cancel-edit");
+    this.otherInputContainer = document.getElementById("other-input-container");
+    this.adminUsername = document.getElementById("admin-username");
+    this.adminPassword = document.getElementById("admin-password");
+    this.hamburger = document.querySelector(".hamburger");
+    this.navMenu = document.querySelector(".nav-menu");
+    this.sections = document.querySelectorAll(".section");
+    this.navButtons = document.querySelectorAll("nav button");
+    this.catBtns = document.querySelectorAll(".cat-btn");
+    this.servicePanels = document.querySelectorAll(".service-panel");
+  },
+};
+
 function tabTo(cat) {
-  document
-    .querySelectorAll(".cat-btn")
-    .forEach((b) => b.classList.remove("active"));
-  document
-    .querySelectorAll(".service-panel")
-    .forEach((p) => p.classList.remove("active"));
+  domCache.catBtns.forEach((b) => b.classList.remove("active"));
+  domCache.servicePanels.forEach((p) => p.classList.remove("active"));
   document.getElementById(`btn-${cat}`).classList.add("active");
   document.getElementById(`panel-${cat}`).classList.add("active");
 }
 
 function checkOther(val) {
-  document.getElementById("other-input-container").style.display =
+  domCache.otherInputContainer.style.display =
     val === "Other" ? "block" : "none";
 }
 
 function toggleMobileMenu() {
-  const hamburger = document.querySelector(".hamburger");
-  const navMenu = document.querySelector(".nav-menu");
-  hamburger.classList.toggle("active");
-  navMenu.classList.toggle("active");
+  domCache.hamburger.classList.toggle("active");
+  domCache.navMenu.classList.toggle("active");
 }
 
 function isLoggedIn() {
@@ -26,26 +68,26 @@ function isLoggedIn() {
 }
 
 function showLoginScreen() {
-  document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("main-app").style.display = "none";
+  domCache.loginScreen.style.display = "flex";
+  domCache.mainApp.style.display = "none";
 }
 
 function hideLoginScreen() {
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("main-app").style.display = "block";
+  domCache.loginScreen.style.display = "none";
+  domCache.mainApp.style.display = "block";
 }
 
 function handleLogin(e) {
   e.preventDefault();
-  const username = document.getElementById("admin-username").value;
-  const password = document.getElementById("admin-password").value;
+  const username = domCache.adminUsername.value;
+  const password = domCache.adminPassword.value;
   if (username === "admin" && password === "admin123") {
     sessionStorage.setItem("vw_admin_logged_in", "true");
     hideLoginScreen();
     setView("garage");
   } else {
     alert("Invalid username or password");
-    document.getElementById("admin-password").value = "";
+    domCache.adminPassword.value = "";
   }
 }
 
@@ -57,30 +99,26 @@ function handleLogout() {
 }
 
 function setView(view) {
-  document
-    .querySelectorAll(".section")
-    .forEach((s) => s.classList.remove("active"));
-  document
-    .querySelectorAll("nav button")
-    .forEach((b) => b.classList.remove("active"));
+  domCache.sections.forEach((s) => s.classList.remove("active"));
+  domCache.navButtons.forEach((b) => b.classList.remove("active"));
   document.getElementById(`${view}-section`).classList.add("active");
   document.getElementById(`nav-${view}`).classList.add("active");
 
   const activeSection = document.getElementById(`${view}-section`);
   if (activeSection) {
     activeSection.setAttribute("aria-hidden", "false");
-    document.querySelectorAll(".section:not(.active)").forEach((section) => {
-      section.setAttribute("aria-hidden", "true");
+    domCache.sections.forEach((section) => {
+      if (!section.classList.contains("active")) {
+        section.setAttribute("aria-hidden", "true");
+      }
     });
   }
 
   if (view === "garage") renderGarage();
 
-  const hamburger = document.querySelector(".hamburger");
-  const navMenu = document.querySelector(".nav-menu");
-  if (hamburger && navMenu) {
-    hamburger.classList.remove("active");
-    navMenu.classList.remove("active");
+  if (domCache.hamburger && domCache.navMenu) {
+    domCache.hamburger.classList.remove("active");
+    domCache.navMenu.classList.remove("active");
   }
   window.scrollTo(0, 0);
 
@@ -101,20 +139,18 @@ async function handleFormSubmit(e) {
     return;
   }
 
-  const modelVal = document.getElementById("model-select").value;
+  const modelVal = domCache.modelSelect.value;
   const finalModel =
-    modelVal === "Other"
-      ? document.getElementById("model-other").value
-      : modelVal;
+    modelVal === "Other" ? domCache.modelOther.value : modelVal;
 
   const entry = {
-    id: document.getElementById("edit-id").value || Date.now().toString(),
+    id: domCache.editId.value || Date.now().toString(),
     model: finalModel,
-    reg: document.getElementById("reg-num").value,
+    reg: domCache.regNum.value,
     tasks: checked,
-    date: document.getElementById("date-pick").value,
-    time: document.getElementById("time-pick").value,
-    notes: document.getElementById("notes").value,
+    date: domCache.datePick.value,
+    time: domCache.timePick.value,
+    notes: domCache.notes.value,
   };
 
   try {
@@ -145,7 +181,7 @@ const form = document.getElementById("mainForm");
 form.addEventListener("submit", handleFormSubmit);
 
 function renderGarage() {
-  const container = document.getElementById("booking-list");
+  const container = domCache.bookingList;
   const data = JSON.parse(localStorage.getItem("vw_enterprise_v4") || "[]");
 
   container.innerHTML = data.length
@@ -201,8 +237,8 @@ function prepEdit(id) {
   const item = data.find((x) => x.id === id);
   setView("book");
 
-  document.getElementById("edit-id").value = item.id;
-  const mSelect = document.getElementById("model-select");
+  domCache.editId.value = item.id;
+  const mSelect = domCache.modelSelect;
   const isStd = Array.from(mSelect.options).some((o) => o.value === item.model);
 
   if (isStd) {
@@ -211,41 +247,37 @@ function prepEdit(id) {
   } else {
     mSelect.value = "Other";
     checkOther("Other");
-    document.getElementById("model-other").value = item.model;
+    domCache.modelOther.value = item.model;
   }
 
-  document.getElementById("reg-num").value = item.reg;
-  document.getElementById("date-pick").value = item.date;
-  document.getElementById("time-pick").value = item.time;
-  document.getElementById("notes").value = item.notes;
+  domCache.regNum.value = item.reg;
+  domCache.datePick.value = item.date;
+  domCache.timePick.value = item.time;
+  domCache.notes.value = item.notes;
 
   document.querySelectorAll('input[name="task"]').forEach((cb) => {
     cb.checked = item.tasks.includes(cb.value);
   });
 
-  document.getElementById("submit-btn").textContent = "Update Records";
-  document.getElementById("cancel-edit").style.display = "block";
+  domCache.submitBtn.textContent = "Update Records";
+  domCache.cancelEdit.style.display = "block";
 }
 
 function resetForm() {
   form.reset();
-  document.getElementById("edit-id").value = "";
-  document.getElementById("submit-btn").textContent = "Submit Booking";
-  document.getElementById("cancel-edit").style.display = "none";
+  domCache.editId.value = "";
+  domCache.submitBtn.textContent = "Submit Booking";
+  domCache.cancelEdit.style.display = "none";
   checkOther("");
   tabTo("maint");
 }
 
+// Initialize DOM cache and set up the application
+domCache.init();
 tabTo("maint");
-document.getElementById("date-pick").min = new Date()
-  .toISOString()
-  .split("T")[0];
+domCache.datePick.min = new Date().toISOString().split("T")[0];
 
-let loginFormHandler = handleLogin;
-
-document
-  .getElementById("login-form")
-  .addEventListener("submit", loginFormHandler);
+document.getElementById("login-form").addEventListener("submit", handleLogin);
 
 if (!isLoggedIn()) {
   showLoginScreen();

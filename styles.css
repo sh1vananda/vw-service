@@ -70,12 +70,12 @@ header {
 }
 
 .logout-btn {
-  color: #ff6b6b !important; /* Red color for logout button */
+  color: #ff6b6b !important;
   border-color: #ff6b6b !important;
 }
 
 .logout-btn:hover {
-  color: #ff5252 !important; /* Darker red on hover */
+  color: #ff5252 !important;
   border-color: #ff5252 !important;
 }
 
@@ -142,7 +142,6 @@ h2:first-of-type {
   margin-top: 0;
 }
 
-/* Form Grid */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -182,7 +181,6 @@ textarea:focus {
   box-shadow: 0 0 0 1px var(--vw-blue);
 }
 
-/* Service Selection Tabs */
 .category-nav {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -257,7 +255,6 @@ textarea:focus {
   margin-top: 3px;
 }
 
-/* Action Buttons */
 .btn-row {
   margin-top: 3.5rem;
   display: flex;
@@ -299,7 +296,6 @@ textarea:focus {
   cursor: pointer;
 }
 
-/* Garage Display */
 .booking-item {
   background: var(--white);
   border: 1px solid var(--border-color);
@@ -337,7 +333,6 @@ textarea:focus {
   border: 1px solid #dee5ef;
 }
 
-/* Responsive */
 @media (max-width: 850px) {
   .form-grid {
     grid-template-columns: 1fr;
@@ -389,7 +384,6 @@ textarea:focus {
   margin-top: 8px;
 }
 
-/* Login Screen */
 .login-screen {
   position: fixed;
   top: 0;
@@ -466,7 +460,6 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(0, 30, 80, 0.1);
 }
 
-/* Main App (Hidden initially) */
 .main-app {
   display: none;
 }
