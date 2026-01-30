@@ -12,14 +12,25 @@ const domCache = {
   submitBtn: null,
   cancelEdit: null,
   otherInputContainer: null,
-  adminUsername: null,
-  adminPassword: null,
   hamburger: null,
   navMenu: null,
   sections: null,
   navButtons: null,
   catBtns: null,
   servicePanels: null,
+  loginForm: null,
+  registerForm: null,
+  authTabs: null,
+  authPanels: null,
+  authError: null,
+  loginIdentifier: null,
+  loginPassword: null,
+  registerUsername: null,
+  registerEmail: null,
+  registerPassword: null,
+  registerConfirm: null,
+  logoutButton: null,
+  mainForm: null,
 
   init() {
     this.loginScreen = document.getElementById("login-screen");
@@ -35,76 +46,206 @@ const domCache = {
     this.submitBtn = document.getElementById("submit-btn");
     this.cancelEdit = document.getElementById("cancel-edit");
     this.otherInputContainer = document.getElementById("other-input-container");
-    this.adminUsername = document.getElementById("admin-username");
-    this.adminPassword = document.getElementById("admin-password");
     this.hamburger = document.querySelector(".hamburger");
     this.navMenu = document.querySelector(".nav-menu");
     this.sections = document.querySelectorAll(".section");
-    this.navButtons = document.querySelectorAll("nav button");
+    this.navButtons = document.querySelectorAll("[data-view]");
     this.catBtns = document.querySelectorAll(".cat-btn");
     this.servicePanels = document.querySelectorAll(".service-panel");
+    this.loginForm = document.getElementById("login-form");
+    this.registerForm = document.getElementById("register-form");
+    this.authTabs = document.querySelectorAll("[data-auth-tab]");
+    this.authPanels = document.querySelectorAll("[data-auth-panel]");
+    this.authError = document.getElementById("auth-error");
+    this.loginIdentifier = document.getElementById("login-identifier");
+    this.loginPassword = document.getElementById("login-password");
+    this.registerUsername = document.getElementById("register-username");
+    this.registerEmail = document.getElementById("register-email");
+    this.registerPassword = document.getElementById("register-password");
+    this.registerConfirm = document.getElementById("register-confirm");
+    this.logoutButton = document.getElementById("nav-logout");
+    this.mainForm = document.getElementById("mainForm");
   },
 };
 
+const appState = {
+  bookings: [],
+  bookingMap: new Map(),
+  user: null,
+};
+
+function setAuthError(message) {
+  if (!domCache.authError) return;
+  domCache.authError.textContent = message || "";
+}
+
+function getToken() {
+  return sessionStorage.getItem("vw_token");
+}
+
+function setToken(token) {
+  sessionStorage.setItem("vw_token", token);
+}
+
+function clearToken() {
+  sessionStorage.removeItem("vw_token");
+}
+
+async function apiFetch(path, options = {}) {
+  const headers = new Headers(options.headers || {});
+  const token = getToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  if (options.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(path, { ...options, headers });
+  const contentType = response.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+  const payload = isJson ? await response.json() : null;
+
+  if (response.status === 401) {
+    clearToken();
+    showLoginScreen();
+  }
+
+  if (!response.ok) {
+    const message =
+      payload?.error ||
+      (Array.isArray(payload?.errors) ? payload.errors.join(" ") : null) ||
+      payload?.message ||
+      "Request failed. Please try again.";
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
 function tabTo(cat) {
-  domCache.catBtns.forEach((b) => b.classList.remove("active"));
-  domCache.servicePanels.forEach((p) => p.classList.remove("active"));
-  document.getElementById(`btn-${cat}`).classList.add("active");
-  document.getElementById(`panel-${cat}`).classList.add("active");
+  domCache.catBtns.forEach((button) => button.classList.remove("active"));
+  domCache.servicePanels.forEach((panel) => panel.classList.remove("active"));
+  const btn = document.getElementById(`btn-${cat}`);
+  const panel = document.getElementById(`panel-${cat}`);
+  if (btn) btn.classList.add("active");
+  if (panel) panel.classList.add("active");
 }
 
 function checkOther(val) {
-  domCache.otherInputContainer.style.display =
-    val === "Other" ? "block" : "none";
+  const isOther = val === "Other";
+  domCache.otherInputContainer.classList.toggle("is-hidden", !isOther);
+  domCache.modelOther.disabled = !isOther;
+  domCache.modelOther.required = isOther;
+  if (!isOther) domCache.modelOther.value = "";
 }
 
 function toggleMobileMenu() {
+  const expanded = domCache.hamburger.getAttribute("aria-expanded") === "true";
+  domCache.hamburger.setAttribute("aria-expanded", String(!expanded));
   domCache.hamburger.classList.toggle("active");
   domCache.navMenu.classList.toggle("active");
 }
 
-function isLoggedIn() {
-  return sessionStorage.getItem("vw_admin_logged_in") === "true";
-}
-
 function showLoginScreen() {
   domCache.loginScreen.style.display = "flex";
+  domCache.loginScreen.setAttribute("aria-hidden", "false");
   domCache.mainApp.style.display = "none";
+  domCache.mainApp.setAttribute("aria-hidden", "true");
+  setAuthView("login");
 }
 
 function hideLoginScreen() {
   domCache.loginScreen.style.display = "none";
+  domCache.loginScreen.setAttribute("aria-hidden", "true");
   domCache.mainApp.style.display = "block";
+  domCache.mainApp.setAttribute("aria-hidden", "false");
 }
 
-function handleLogin(e) {
-  e.preventDefault();
-  const username = domCache.adminUsername.value;
-  const password = domCache.adminPassword.value;
-  if (username === "admin" && password === "admin123") {
-    sessionStorage.setItem("vw_admin_logged_in", "true");
+function setAuthView(view) {
+  domCache.authTabs.forEach((tab) => {
+    const isActive = tab.dataset.authTab === view;
+    tab.classList.toggle("active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
+  domCache.authPanels.forEach((panel) => {
+    panel.classList.toggle("is-hidden", panel.dataset.authPanel !== view);
+  });
+  setAuthError("");
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const identifier = domCache.loginIdentifier.value.trim();
+  const password = domCache.loginPassword.value;
+  if (!identifier || !password) {
+    setAuthError("Enter your username/email and password.");
+    return;
+  }
+
+  try {
+    const result = await apiFetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ identifier, password }),
+    });
+    setToken(result.token);
+    domCache.loginPassword.value = "";
+    setAuthError("");
     hideLoginScreen();
     setView("garage");
-  } else {
-    alert("Invalid username or password");
-    domCache.adminPassword.value = "";
+  } catch (error) {
+    setAuthError(error.message);
+    domCache.loginPassword.value = "";
+  }
+}
+
+async function handleRegister(event) {
+  event.preventDefault();
+  const username = domCache.registerUsername.value.trim();
+  const email = domCache.registerEmail.value.trim();
+  const password = domCache.registerPassword.value;
+  const confirm = domCache.registerConfirm.value;
+
+  if (!username || !email || !password || !confirm) {
+    setAuthError("Complete all registration fields.");
+    return;
+  }
+  if (password !== confirm) {
+    setAuthError("Passwords do not match.");
+    return;
+  }
+
+  try {
+    const result = await apiFetch("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ username, email, password }),
+    });
+    setToken(result.token);
+    domCache.registerPassword.value = "";
+    domCache.registerConfirm.value = "";
+    setAuthError("");
+    hideLoginScreen();
+    setView("garage");
+  } catch (error) {
+    setAuthError(error.message);
   }
 }
 
 function handleLogout() {
-  if (confirm("Are you sure you want to logout?")) {
-    sessionStorage.removeItem("vw_admin_logged_in");
-    showLoginScreen();
-  }
+  if (!confirm("Are you sure you want to logout?")) return;
+  clearToken();
+  appState.bookings = [];
+  appState.bookingMap = new Map();
+  resetForm();
+  showLoginScreen();
 }
 
 function setView(view) {
-  domCache.sections.forEach((s) => s.classList.remove("active"));
-  domCache.navButtons.forEach((b) => b.classList.remove("active"));
-  document.getElementById(`${view}-section`).classList.add("active");
-  document.getElementById(`nav-${view}`).classList.add("active");
-
+  domCache.sections.forEach((section) => section.classList.remove("active"));
+  domCache.navButtons.forEach((button) => button.classList.remove("active"));
   const activeSection = document.getElementById(`${view}-section`);
+  const activeNav = document.getElementById(`nav-${view}`);
+  if (activeSection) activeSection.classList.add("active");
+  if (activeNav) activeNav.classList.add("active");
+
   if (activeSection) {
     activeSection.setAttribute("aria-hidden", "false");
     domCache.sections.forEach((section) => {
@@ -114,138 +255,198 @@ function setView(view) {
     });
   }
 
-  if (view === "garage") renderGarage();
+  if (view === "garage") loadBookings();
 
   if (domCache.hamburger && domCache.navMenu) {
     domCache.hamburger.classList.remove("active");
     domCache.navMenu.classList.remove("active");
+    domCache.hamburger.setAttribute("aria-expanded", "false");
   }
+
   window.scrollTo(0, 0);
 
-  const mainHeading = activeSection.querySelector("h1");
-  if (mainHeading) {
-    mainHeading.focus();
-  }
+  const mainHeading = activeSection?.querySelector("h1");
+  if (mainHeading) mainHeading.focus();
 }
 
-async function handleFormSubmit(e) {
-  e.preventDefault();
-  const checked = Array.from(
+function collectFormData() {
+  const selectedTasks = Array.from(
     document.querySelectorAll('input[name="task"]:checked')
-  ).map((i) => i.value);
+  ).map((input) => input.value);
 
-  if (checked.length === 0) {
-    alert("Technical requirement selection is mandatory.");
-    return;
+  if (selectedTasks.length === 0) {
+    return { error: "Technical requirement selection is mandatory." };
   }
 
   const modelVal = domCache.modelSelect.value;
-  const finalModel =
-    modelVal === "Other" ? domCache.modelOther.value : modelVal;
+  const otherModel = domCache.modelOther.value.trim();
+  const finalModel = modelVal === "Other" ? otherModel : modelVal;
 
-  const entry = {
-    id: domCache.editId.value || Date.now().toString(),
-    model: finalModel,
-    reg: domCache.regNum.value,
-    tasks: checked,
-    date: domCache.datePick.value,
-    time: domCache.timePick.value,
-    notes: domCache.notes.value,
-  };
-
-  try {
-    const response = await fetch("http://localhost:3000/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(entry),
-    });
-    if (response.ok) {
-      console.log("Saved to database");
-    }
-  } catch (error) {
-    console.log("API unavailable, using localStorage");
+  if (!finalModel) {
+    return { error: "Vehicle model is required." };
   }
 
-  const data = JSON.parse(localStorage.getItem("vw_enterprise_v4") || "[]");
-  const idx = data.findIndex((x) => x.id === entry.id);
+  const reg = domCache.regNum.value.trim().toUpperCase();
+  if (!reg) {
+    return { error: "Registration number is required." };
+  }
 
-  if (idx > -1) data[idx] = entry;
-  else data.push(entry);
+  const date = domCache.datePick.value;
+  const time = domCache.timePick.value;
+  if (!date || !time) {
+    return { error: "Appointment date and time are required." };
+  }
 
-  localStorage.setItem("vw_enterprise_v4", JSON.stringify(data));
-  resetForm();
-  setView("garage");
+  return {
+    data: {
+      model: finalModel,
+      reg,
+      tasks: selectedTasks,
+      date,
+      time,
+      notes: domCache.notes.value.trim(),
+    },
+  };
 }
 
-const form = document.getElementById("mainForm");
-form.addEventListener("submit", handleFormSubmit);
+async function handleFormSubmit(event) {
+  event.preventDefault();
+  const { data, error } = collectFormData();
+  if (error) {
+    alert(error);
+    return;
+  }
+
+  try {
+    if (domCache.editId.value) {
+      await apiFetch(`/api/bookings/${domCache.editId.value}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+    } else {
+      await apiFetch("/api/bookings", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    }
+    resetForm();
+    setView("garage");
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+async function loadBookings() {
+  try {
+    const data = await apiFetch("/api/bookings");
+    appState.bookings = Array.isArray(data) ? data : [];
+    appState.bookingMap = new Map(
+      appState.bookings.map((booking) => [booking.id, booking])
+    );
+    renderGarage();
+  } catch (error) {
+    alert(error.message);
+  }
+}
 
 function renderGarage() {
   const container = domCache.bookingList;
-  const data = JSON.parse(localStorage.getItem("vw_enterprise_v4") || "[]");
+  container.innerHTML = "";
 
-  container.innerHTML = data.length
-    ? ""
-    : '<div class="card">No active technical dossiers found.</div>';
+  if (!appState.bookings.length) {
+    const empty = document.createElement("div");
+    empty.className = "card";
+    empty.textContent = "No active technical dossiers found.";
+    container.appendChild(empty);
+    return;
+  }
 
-  data
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .forEach((item) => {
-      const div = document.createElement("div");
-      div.className = "booking-item";
-      div.setAttribute("role", "region");
-      div.setAttribute("aria-label", `Booking for ${item.model} - ${item.reg}`);
-      div.innerHTML = `
-        <div class="booking-meta">
-            <h3>${item.model} — ${item.reg}</h3>
-            <p>Dossier Date: <strong>${
-              item.date
-            }</strong> | Scheduled Slot: <strong>${item.time}</strong></p>
-            <div class="task-tags" aria-label="Service tasks">
-                ${item.tasks
-                  .map(
-                    (t) =>
-                      `<span class="tag" aria-label="Service task: ${t}">${t}</span>`
-                  )
-                  .join("")}
-            </div>
-        </div>
-        <div style="display:flex; gap:1.5rem; align-items:center">
-            <button class="btn btn-outline" style="padding:0.7rem 1.5rem;" onclick="prepEdit('${
-              item.id
-            }')" aria-label="Modify booking for ${item.model}">Modify</button>
-            <button class="btn btn-danger" onclick="cancelBooking('${
-              item.id
-            }')" aria-label="Cancel booking for ${item.model}">Cancel</button>
-        </div>
-    `;
-      container.appendChild(div);
+  appState.bookings.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "booking-item";
+    card.setAttribute("role", "region");
+    card.setAttribute("aria-label", `Booking for ${item.model} - ${item.reg}`);
+
+    const meta = document.createElement("div");
+    meta.className = "booking-meta";
+
+    const title = document.createElement("h3");
+    title.textContent = `${item.model} - ${item.reg}`;
+
+    const info = document.createElement("p");
+    info.textContent = `Dossier Date: ${item.date} | Scheduled Slot: ${item.time}`;
+
+    const tags = document.createElement("div");
+    tags.className = "task-tags";
+    tags.setAttribute("aria-label", "Service tasks");
+    item.tasks.forEach((task) => {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = task;
+      tag.setAttribute("aria-label", `Service task: ${task}`);
+      tags.appendChild(tag);
     });
+
+    meta.appendChild(title);
+    meta.appendChild(info);
+    meta.appendChild(tags);
+
+    const actions = document.createElement("div");
+    actions.className = "booking-actions";
+
+    const editButton = document.createElement("button");
+    editButton.className = "btn btn-outline";
+    editButton.type = "button";
+    editButton.dataset.action = "edit";
+    editButton.dataset.id = item.id;
+    editButton.textContent = "Modify";
+    editButton.setAttribute("aria-label", `Modify booking for ${item.model}`);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "btn btn-danger";
+    deleteButton.type = "button";
+    deleteButton.dataset.action = "delete";
+    deleteButton.dataset.id = item.id;
+    deleteButton.textContent = "Cancel";
+    deleteButton.setAttribute("aria-label", `Cancel booking for ${item.model}`);
+
+    actions.appendChild(editButton);
+    actions.appendChild(deleteButton);
+
+    card.appendChild(meta);
+    card.appendChild(actions);
+    container.appendChild(card);
+  });
 }
 
-function cancelBooking(id) {
-  if (!confirm("Are you sure you want to purge this technical booking?"))
-    return;
-  let data = JSON.parse(localStorage.getItem("vw_enterprise_v4"));
-  data = data.filter((x) => x.id !== id);
-  localStorage.setItem("vw_enterprise_v4", JSON.stringify(data));
-  renderGarage();
+async function cancelBooking(id) {
+  if (!confirm("Are you sure you want to purge this technical booking?")) return;
+  try {
+    await apiFetch(`/api/bookings/${id}`, { method: "DELETE" });
+    await loadBookings();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 function prepEdit(id) {
-  const data = JSON.parse(localStorage.getItem("vw_enterprise_v4"));
-  const item = data.find((x) => x.id === id);
+  const item = appState.bookingMap.get(id);
+  if (!item) {
+    alert("Booking not found.");
+    return;
+  }
   setView("book");
 
   domCache.editId.value = item.id;
-  const mSelect = domCache.modelSelect;
-  const isStd = Array.from(mSelect.options).some((o) => o.value === item.model);
+  const isStandard = Array.from(domCache.modelSelect.options).some(
+    (option) => option.value === item.model
+  );
 
-  if (isStd) {
-    mSelect.value = item.model;
+  if (isStandard) {
+    domCache.modelSelect.value = item.model;
     checkOther("");
   } else {
-    mSelect.value = "Other";
+    domCache.modelSelect.value = "Other";
     checkOther("Other");
     domCache.modelOther.value = item.model;
   }
@@ -253,35 +454,80 @@ function prepEdit(id) {
   domCache.regNum.value = item.reg;
   domCache.datePick.value = item.date;
   domCache.timePick.value = item.time;
-  domCache.notes.value = item.notes;
+  domCache.notes.value = item.notes || "";
 
-  document.querySelectorAll('input[name="task"]').forEach((cb) => {
-    cb.checked = item.tasks.includes(cb.value);
+  document.querySelectorAll('input[name="task"]').forEach((checkbox) => {
+    checkbox.checked = item.tasks.includes(checkbox.value);
   });
 
   domCache.submitBtn.textContent = "Update Records";
-  domCache.cancelEdit.style.display = "block";
+  domCache.cancelEdit.classList.remove("is-hidden");
+}
+
+function handleBookingListClick(event) {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const id = button.dataset.id;
+  if (button.dataset.action === "edit") {
+    prepEdit(id);
+  }
+  if (button.dataset.action === "delete") {
+    cancelBooking(id);
+  }
 }
 
 function resetForm() {
-  form.reset();
+  domCache.mainForm.reset();
   domCache.editId.value = "";
   domCache.submitBtn.textContent = "Submit Booking";
-  domCache.cancelEdit.style.display = "none";
-  checkOther("");
+  domCache.cancelEdit.classList.add("is-hidden");
+  checkOther(domCache.modelSelect.value);
   tabTo("maint");
 }
 
-// Initialize DOM cache and set up the application
-domCache.init();
-tabTo("maint");
-domCache.datePick.min = new Date().toISOString().split("T")[0];
+async function bootstrap() {
+  domCache.init();
 
-document.getElementById("login-form").addEventListener("submit", handleLogin);
+  domCache.authTabs.forEach((tab) =>
+    tab.addEventListener("click", () => setAuthView(tab.dataset.authTab))
+  );
+  domCache.loginForm.addEventListener("submit", handleLogin);
+  domCache.registerForm.addEventListener("submit", handleRegister);
+  domCache.logoutButton.addEventListener("click", handleLogout);
+  domCache.navButtons.forEach((button) =>
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      setView(button.dataset.view);
+    })
+  );
+  domCache.hamburger.addEventListener("click", toggleMobileMenu);
+  domCache.catBtns.forEach((button) =>
+    button.addEventListener("click", () => tabTo(button.dataset.cat))
+  );
+  domCache.modelSelect.addEventListener("change", (event) =>
+    checkOther(event.target.value)
+  );
+  domCache.mainForm.addEventListener("submit", handleFormSubmit);
+  domCache.cancelEdit.addEventListener("click", resetForm);
+  domCache.bookingList.addEventListener("click", handleBookingListClick);
 
-if (!isLoggedIn()) {
-  showLoginScreen();
-} else {
-  hideLoginScreen();
-  setView("garage");
+  tabTo("maint");
+  domCache.modelOther.disabled = true;
+  domCache.datePick.min = new Date().toISOString().split("T")[0];
+
+  if (!getToken()) {
+    showLoginScreen();
+    return;
+  }
+
+  try {
+    await apiFetch("/api/auth/me");
+    hideLoginScreen();
+    setView("garage");
+  } catch (error) {
+    clearToken();
+    showLoginScreen();
+  }
 }
+
+bootstrap();

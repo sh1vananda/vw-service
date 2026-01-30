@@ -9,56 +9,157 @@
   <body>
     <div id="login-screen" class="login-screen">
       <div class="login-container">
-        <div class="login-header">
-          <div class="logo">VOLKSWAGEN <span>SYSTEMS</span></div>
-          <h1>Service Portal Login</h1>
+        <div class="login-shell">
+          <div class="login-panel">
+            <div class="login-header">
+              <h2 class="login-panel-title">Service Portal Access</h2>
+            </div>
+            <div class="login-tabs" role="tablist" aria-label="Authentication">
+              <button
+                type="button"
+                class="login-tab active"
+                data-auth-tab="login"
+                role="tab"
+                aria-selected="true"
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                class="login-tab"
+                data-auth-tab="register"
+                role="tab"
+                aria-selected="false"
+              >
+                Register
+              </button>
+            </div>
+            <div
+              id="auth-error"
+              class="auth-error"
+              role="alert"
+              aria-live="polite"
+            ></div>
+            <form id="login-form" class="login-form" data-auth-panel="login">
+              <div class="form-group">
+                <label for="login-identifier">Username or Email</label>
+                <input
+                  type="text"
+                  id="login-identifier"
+                  name="identifier"
+                  placeholder="Enter username or email"
+                  autocomplete="username"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="login-password">Password</label>
+                <input
+                  type="password"
+                  id="login-password"
+                  name="password"
+                  placeholder="Enter password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <form
+              id="register-form"
+              class="login-form is-hidden"
+              data-auth-panel="register"
+            >
+              <div class="form-group">
+                <label for="register-username">Username</label>
+                <input
+                  type="text"
+                  id="register-username"
+                  name="username"
+                  placeholder="Choose a username"
+                  autocomplete="username"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="register-email">Email</label>
+                <input
+                  type="email"
+                  id="register-email"
+                  name="email"
+                  placeholder="Enter your email"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="register-password">Password</label>
+                <input
+                  type="password"
+                  id="register-password"
+                  name="password"
+                  placeholder="Create a password"
+                  minlength="8"
+                  autocomplete="new-password"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="register-confirm">Confirm Password</label>
+                <input
+                  type="password"
+                  id="register-confirm"
+                  name="confirm"
+                  placeholder="Re-enter password"
+                  minlength="8"
+                  autocomplete="new-password"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Create Account
+              </button>
+            </form>
+          </div>
         </div>
-        <form id="login-form" class="login-form">
-          <div class="form-group">
-            <label for="admin-username">Username</label>
-            <input
-              type="text"
-              id="admin-username"
-              placeholder="Enter username"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label for="admin-password">Password</label>
-            <input
-              type="password"
-              id="admin-password"
-              placeholder="Enter password"
-              required
-            />
-          </div>
-          <button type="submit" class="btn btn-primary">Login</button>
-        </form>
       </div>
     </div>
 
     <div id="main-app" class="main-app">
       <header>
-        <div class="logo">VOLKSWAGEN <span>SYSTEMS</span></div>
+        <a
+          class="logo logo-link"
+          href="#"
+          data-view="book"
+          aria-label="Volkswagen Systems home"
+        >
+          VOLKSWAGEN <span>SYSTEMS</span>
+        </a>
         <nav>
-          <button class="hamburger" onclick="toggleMobileMenu()">
+          <button
+            class="hamburger"
+            id="nav-toggle"
+            type="button"
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+          >
             <span></span>
             <span></span>
             <span></span>
           </button>
           <ul class="nav-menu">
             <li>
-              <button id="nav-book" class="active" onclick="setView('book')">
+              <button id="nav-book" class="active" data-view="book" type="button">
                 Service Booking
               </button>
             </li>
             <li>
-              <button id="nav-garage" onclick="setView('garage')">
+              <button id="nav-garage" data-view="garage" type="button">
                 My Portal
               </button>
             </li>
             <li>
-              <button id="nav-logout" onclick="handleLogout()" class="logout-btn">
+              <button id="nav-logout" class="logout-btn" type="button">
                 Logout
               </button>
             </li>
@@ -68,7 +169,7 @@
 
       <main>
         <section id="book-section" class="section active">
-          <h1>Technical Service Scheduler</h1>
+          <h1 tabindex="-1">Technical Service Scheduler</h1>
           <div class="card">
             <form id="mainForm">
               <input type="hidden" id="edit-id" />
@@ -79,7 +180,6 @@
                   <label>Vehicle Model</label>
                   <select
                     id="model-select"
-                    onchange="checkOther(this.value)"
                     required
                   >
                     <option value="" disabled selected>Select Model</option>
@@ -90,7 +190,7 @@
                     <option value="Jetta">Jetta</option>
                     <option value="Other">Other Model</option>
                   </select>
-                  <div id="other-input-container">
+                  <div id="other-input-container" class="is-hidden">
                     <input
                       type="text"
                       id="model-other"
@@ -115,7 +215,7 @@
                   type="button"
                   class="cat-btn"
                   id="btn-maint"
-                  onclick="tabTo('maint')"
+                  data-cat="maint"
                 >
                   <h4>Periodic Maintenance</h4>
                 </button>
@@ -123,7 +223,7 @@
                   type="button"
                   class="cat-btn"
                   id="btn-repair"
-                  onclick="tabTo('repair')"
+                  data-cat="repair"
                 >
                   <h4>Mechanical & Electrical</h4>
                 </button>
@@ -131,7 +231,7 @@
                   type="button"
                   class="cat-btn"
                   id="btn-body"
-                  onclick="tabTo('body')"
+                  data-cat="body"
                 >
                   <h4>Body & Detailing</h4>
                 </button>
@@ -389,9 +489,7 @@
                 <button
                   type="button"
                   id="cancel-edit"
-                  class="btn btn-outline"
-                  style="display: none"
-                  onclick="resetForm()"
+                  class="btn btn-outline is-hidden"
                 >
                   Discard Modification
                 </button>
@@ -401,7 +499,7 @@
         </section>
 
         <section id="garage-section" class="section">
-          <h1>Vehicle Service Portal</h1>
+          <h1 tabindex="-1">Vehicle Service Portal</h1>
           <div id="booking-list"></div>
         </section>
       </main>
