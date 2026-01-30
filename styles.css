@@ -522,6 +522,15 @@ textarea:focus {
   color: var(--white);
   border-color: var(--vw-blue);
 }
+.auth-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+.auth-note span {
+  color: var(--vw-blue);
+  font-weight: 700;
+}
 .auth-error {
   min-height: 0;
   margin-bottom: 0;

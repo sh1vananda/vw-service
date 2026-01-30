@@ -74,6 +74,11 @@ const appState = {
   user: null,
 };
 
+const DEMO_IDENTIFIER = "demo";
+const DEMO_PASSWORD = "demo1234";
+const DEMO_MODE_KEY = "vw_demo_mode";
+const DEMO_BOOKINGS_KEY = "vw_demo_bookings";
+
 function setAuthError(message) {
   if (!domCache.authError) return;
   domCache.authError.textContent = message || "";
@@ -89,6 +94,38 @@ function setToken(token) {
 
 function clearToken() {
   sessionStorage.removeItem("vw_token");
+}
+
+function isDemoMode() {
+  return sessionStorage.getItem(DEMO_MODE_KEY) === "true";
+}
+
+function enableDemoMode() {
+  sessionStorage.setItem(DEMO_MODE_KEY, "true");
+  setToken("demo-token");
+}
+
+function clearDemoMode() {
+  sessionStorage.removeItem(DEMO_MODE_KEY);
+}
+
+function isDemoCredentials(identifier, password) {
+  return (
+    identifier.trim().toLowerCase() === DEMO_IDENTIFIER &&
+    password === DEMO_PASSWORD
+  );
+}
+
+function getDemoBookings() {
+  return JSON.parse(localStorage.getItem(DEMO_BOOKINGS_KEY) || "[]");
+}
+
+function saveDemoBookings(bookings) {
+  localStorage.setItem(DEMO_BOOKINGS_KEY, JSON.stringify(bookings));
+}
+
+function createDemoId() {
+  return `demo-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
 async function apiFetch(path, options = {}) {
@@ -181,6 +218,15 @@ async function handleLogin(event) {
     return;
   }
 
+  if (isDemoCredentials(identifier, password)) {
+    enableDemoMode();
+    setAuthError("");
+    domCache.loginPassword.value = "";
+    hideLoginScreen();
+    setView("garage");
+    return;
+  }
+
   try {
     const result = await apiFetch("/api/auth/login", {
       method: "POST",
@@ -192,7 +238,22 @@ async function handleLogin(event) {
     hideLoginScreen();
     setView("garage");
   } catch (error) {
-    setAuthError(error.message);
+    const isNetworkError =
+      error instanceof TypeError ||
+      /failed to fetch|network/i.test(error.message);
+    if (isNetworkError && isDemoCredentials(identifier, password)) {
+      enableDemoMode();
+      setAuthError("");
+      domCache.loginPassword.value = "";
+      hideLoginScreen();
+      setView("garage");
+      return;
+    }
+    if (isNetworkError) {
+      setAuthError("Backend unavailable. Use demo login: demo / demo1234.");
+    } else {
+      setAuthError(error.message);
+    }
     domCache.loginPassword.value = "";
   }
 }
@@ -225,12 +286,20 @@ async function handleRegister(event) {
     hideLoginScreen();
     setView("garage");
   } catch (error) {
-    setAuthError(error.message);
+    const isNetworkError =
+      error instanceof TypeError ||
+      /failed to fetch|network/i.test(error.message);
+    setAuthError(
+      isNetworkError
+        ? "Registration requires the backend. Use demo login: demo / demo1234."
+        : error.message
+    );
   }
 }
 
 function handleLogout() {
   if (!confirm("Are you sure you want to logout?")) return;
+  clearDemoMode();
   clearToken();
   appState.bookings = [];
   appState.bookingMap = new Map();
@@ -318,6 +387,18 @@ async function handleFormSubmit(event) {
   }
 
   try {
+    if (isDemoMode()) {
+      const entries = getDemoBookings();
+      const entryId = domCache.editId.value || createDemoId();
+      const entry = { id: entryId, ...data };
+      const idx = entries.findIndex((item) => item.id === entryId);
+      if (idx > -1) entries[idx] = entry;
+      else entries.push(entry);
+      saveDemoBookings(entries);
+      resetForm();
+      setView("garage");
+      return;
+    }
     if (domCache.editId.value) {
       await apiFetch(`/api/bookings/${domCache.editId.value}`, {
         method: "PUT",
@@ -338,6 +419,15 @@ async function handleFormSubmit(event) {
 
 async function loadBookings() {
   try {
+    if (isDemoMode()) {
+      const data = getDemoBookings();
+      appState.bookings = Array.isArray(data) ? data : [];
+      appState.bookingMap = new Map(
+        appState.bookings.map((booking) => [booking.id, booking])
+      );
+      renderGarage();
+      return;
+    }
     const data = await apiFetch("/api/bookings");
     appState.bookings = Array.isArray(data) ? data : [];
     appState.bookingMap = new Map(
@@ -422,6 +512,12 @@ function renderGarage() {
 async function cancelBooking(id) {
   if (!confirm("Are you sure you want to purge this technical booking?")) return;
   try {
+    if (isDemoMode()) {
+      const entries = getDemoBookings().filter((item) => item.id !== id);
+      saveDemoBookings(entries);
+      await loadBookings();
+      return;
+    }
     await apiFetch(`/api/bookings/${id}`, { method: "DELETE" });
     await loadBookings();
   } catch (error) {
@@ -521,10 +617,16 @@ async function bootstrap() {
   }
 
   try {
+    if (isDemoMode()) {
+      hideLoginScreen();
+      setView("garage");
+      return;
+    }
     await apiFetch("/api/auth/me");
     hideLoginScreen();
     setView("garage");
   } catch (error) {
+    clearDemoMode();
     clearToken();
     showLoginScreen();
   }
