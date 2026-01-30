@@ -605,7 +605,25 @@
 
         <section id="garage-section" class="section">
           <h1 tabindex="-1">Vehicle Service Portal</h1>
-          <div id="booking-list"></div>
+          <div class="portal-layout">
+            <aside class="portal-sidebar">
+              <div class="card portal-card">
+                <h2 class="portal-title">Account Overview</h2>
+                <div class="portal-user">
+                  <p class="portal-label">Username</p>
+                  <p id="user-name" class="portal-value">—</p>
+                  <p class="portal-label">Email</p>
+                  <p id="user-email" class="portal-value">—</p>
+                </div>
+                <p id="user-mode" class="portal-note is-hidden">
+                  Demo mode (local data only)
+                </p>
+              </div>
+            </aside>
+            <div class="portal-main">
+              <div id="booking-list"></div>
+            </div>
+          </div>
         </section>
       </main>
       <footer class="site-footer">

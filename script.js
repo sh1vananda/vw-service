@@ -31,6 +31,9 @@ const domCache = {
   registerConfirm: null,
   logoutButton: null,
   mainForm: null,
+  userName: null,
+  userEmail: null,
+  userMode: null,
 
   init() {
     this.loginScreen = document.getElementById("login-screen");
@@ -65,6 +68,9 @@ const domCache = {
     this.registerConfirm = document.getElementById("register-confirm");
     this.logoutButton = document.getElementById("nav-logout");
     this.mainForm = document.getElementById("mainForm");
+    this.userName = document.getElementById("user-name");
+    this.userEmail = document.getElementById("user-email");
+    this.userMode = document.getElementById("user-mode");
   },
 };
 
@@ -82,6 +88,17 @@ const DEMO_BOOKINGS_KEY = "vw_demo_bookings";
 function setAuthError(message) {
   if (!domCache.authError) return;
   domCache.authError.textContent = message || "";
+}
+
+function setUserInfo(user) {
+  appState.user = user || null;
+  if (!domCache.userName || !domCache.userEmail) return;
+  domCache.userName.textContent = user?.username || "—";
+  domCache.userEmail.textContent = user?.email || "—";
+  if (domCache.userMode) {
+    const isDemo = isDemoMode();
+    domCache.userMode.classList.toggle("is-hidden", !isDemo);
+  }
 }
 
 function getToken() {
@@ -103,6 +120,7 @@ function isDemoMode() {
 function enableDemoMode() {
   sessionStorage.setItem(DEMO_MODE_KEY, "true");
   setToken("demo-token");
+  setUserInfo({ username: "Demo User", email: "demo@preview.local" });
 }
 
 function clearDemoMode() {
@@ -233,6 +251,7 @@ async function handleLogin(event) {
       body: JSON.stringify({ identifier, password }),
     });
     setToken(result.token);
+    setUserInfo(result.user);
     domCache.loginPassword.value = "";
     setAuthError("");
     hideLoginScreen();
@@ -280,6 +299,7 @@ async function handleRegister(event) {
       body: JSON.stringify({ username, email, password }),
     });
     setToken(result.token);
+    setUserInfo(result.user);
     domCache.registerPassword.value = "";
     domCache.registerConfirm.value = "";
     setAuthError("");
@@ -303,6 +323,7 @@ function handleLogout() {
   clearToken();
   appState.bookings = [];
   appState.bookingMap = new Map();
+  setUserInfo(null);
   resetForm();
   showLoginScreen();
 }
@@ -618,11 +639,13 @@ async function bootstrap() {
 
   try {
     if (isDemoMode()) {
+      setUserInfo({ username: "Demo User", email: "demo@preview.local" });
       hideLoginScreen();
       setView("garage");
       return;
     }
-    await apiFetch("/api/auth/me");
+    const data = await apiFetch("/api/auth/me");
+    setUserInfo(data.user);
     hideLoginScreen();
     setView("garage");
   } catch (error) {
