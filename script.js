@@ -156,7 +156,7 @@ function showLoginScreen() {
 function hideLoginScreen() {
   domCache.loginScreen.style.display = "none";
   domCache.loginScreen.setAttribute("aria-hidden", "true");
-  domCache.mainApp.style.display = "block";
+  domCache.mainApp.style.display = "flex";
   domCache.mainApp.setAttribute("aria-hidden", "false");
 }
 

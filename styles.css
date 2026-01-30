@@ -20,6 +20,7 @@ body {
   color: var(--text-dark);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
 header {
@@ -533,6 +534,57 @@ textarea:focus {
 
 .main-app {
   display: none;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.main-app main {
+  flex: 1;
+}
+
+.main-app .site-footer {
+  margin-top: auto;
+}
+
+.site-footer {
+  background: var(--vw-blue);
+  color: var(--white);
+  padding: 2.5rem 5%;
+}
+.footer-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+}
+.site-footer h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+.site-footer p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 0.5rem;
+}
+.footer-link {
+  display: block;
+  width: fit-content;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  color: var(--white);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.footer-link:hover {
+  color: #a0b0c5;
 }
 
 @media (max-width: 640px) {
