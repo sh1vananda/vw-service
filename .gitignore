@@ -4,3 +4,4 @@ package-lock.json
 npm-debug.log*
 .vscode/
 .env
+.idea/

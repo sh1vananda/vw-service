@@ -50,6 +50,16 @@ header {
 .logo-link:hover {
   opacity: 0.85;
 }
+.logo-img {
+  height: 26px;
+  width: auto;
+  display: block;
+}
+.logo-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 .logo span {
   font-weight: 300;
   color: #a0b0c5;
@@ -486,6 +496,15 @@ textarea:focus {
 .login-header {
   text-align: left;
   margin: 0;
+}
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.25rem;
+}
+.auth-brand .logo-img {
+  height: 32px;
 }
 
 .login-panel-title {

@@ -443,6 +443,8 @@ app.delete("/api/bookings/:id", requireAuth, async (req, res) => {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.use(express.static(__dirname, { index: false }));
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
