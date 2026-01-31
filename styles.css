@@ -494,12 +494,14 @@ textarea:focus {
 }
 
 .login-header {
-  text-align: left;
+  text-align: center;
   margin: 0;
 }
 .auth-brand {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
   gap: 0.6rem;
   margin-bottom: 0.25rem;
 }
